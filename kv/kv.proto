@@ -1,0 +1,41 @@
+syntax = "proto3";
+package kv;
+
+service kv{
+  // return Version only 
+  // if Errno is VERSION_ERROR ,it will return the newer value
+  rpc Set(Data) returns (Result) {}
+  rpc Get(Data) returns (Result) {}
+}
+
+service Replica{
+	//request send last binlog
+	rpc Sync(Binlog) returns (stream Binlog){}
+}
+
+enum ERRNO{
+	SUCCESS= 0;
+	VERSION= 1;
+	UNKNOW = -1;
+}
+
+// The request message containing the user's name.
+message Data{
+  bytes Key  = 2;
+  bytes Value= 3;
+  int64 Version=4;//set will return only version
+}
+
+// The response message containing the greetings
+message Result{
+ ERRNO Errno=1;
+ Data Data=2;
+}
+
+
+message Binlog{
+	//if Sequence == 0 is copy mode
+	//on copy,reset status
+	int64 Sequence=1;
+	Data Data=2;
+}
